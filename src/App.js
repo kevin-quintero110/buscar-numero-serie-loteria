@@ -1,16 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 
 export default function App() {
+  const listaInicial = Array.from({ length: 1000 }, (_, i) =>
+    i.toString().padStart(3, "0")
+  );
+
   const [numeros, setNumeros] = useState(
-    () =>
-      JSON.parse(localStorage.getItem("numeros")) ||
-      Array.from({ length: 1000 }, (_, i) => i.toString().padStart(3, "0"))
+    () => JSON.parse(localStorage.getItem("numeros")) || listaInicial
   );
   const [highlight, setHighlight] = useState(null);
   const [input, setInput] = useState("");
 
-  // Guarda cambios en localStorage
   useEffect(() => {
     localStorage.setItem("numeros", JSON.stringify(numeros));
   }, [numeros]);
@@ -21,7 +22,6 @@ export default function App() {
       nuevaLista.push(input);
       setNumeros(nuevaLista);
       setHighlight(input);
-      // Scroll al final
       setTimeout(() => {
         document.getElementById(input)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -31,7 +31,21 @@ export default function App() {
   const buscarNumero = () => {
     if (numeros.includes(input)) {
       setHighlight(input);
-      // Scroll al número encontrado
+      setTimeout(() => {
+        document.getElementById(input)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  };
+
+  // 👇 Nueva función: restaurar número a su posición original
+  const restaurarNumero = () => {
+    if (listaInicial.includes(input)) {
+      const nuevaLista = numeros.filter((n) => n !== input);
+      // Insertar en la posición original
+      const indexOriginal = listaInicial.indexOf(input);
+      nuevaLista.splice(indexOriginal, 0, input);
+      setNumeros(nuevaLista);
+      setHighlight(input);
       setTimeout(() => {
         document.getElementById(input)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -49,12 +63,13 @@ export default function App() {
       <div className="botones">
         <button onClick={moverAlFinal}>Mover al final</button>
         <button onClick={buscarNumero}>Buscar número</button>
+        <button onClick={restaurarNumero}>Restaurar número</button>
       </div>
       <div className="grid">
         {numeros.map((num) => (
           <div
             key={num}
-            id={num} // 👈 ID único para scroll
+            id={num}
             className={`celda ${num === highlight ? "resaltado" : ""}`}
           >
             {num}
