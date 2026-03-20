@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/buscar-numero-serie-loteria/static/css/main.19253b84.css",
+    "main.js": "/buscar-numero-serie-loteria/static/js/main.45c06887.js",
+    "index.html": "/buscar-numero-serie-loteria/index.html",
+    "main.19253b84.css.map": "/buscar-numero-serie-loteria/static/css/main.19253b84.css.map",
+    "main.45c06887.js.map": "/buscar-numero-serie-loteria/static/js/main.45c06887.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.19253b84.css",
+    "static/js/main.45c06887.js"
+  ]
+}
