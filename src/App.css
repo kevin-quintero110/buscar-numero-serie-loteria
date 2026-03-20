@@ -1,0 +1,57 @@
+.app {
+  background-color: #000;
+  min-height: 100vh;
+  color: #fff;
+  padding: 10px;
+  font-family: Arial, sans-serif;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 4px;
+}
+
+.botones {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.botones button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background: #444;
+  color: #fff;
+  cursor: pointer;
+}
+
+.botones button:hover {
+  background: #e4b8b8;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  max-height: 80vh; /* 👈 límite de altura */
+  overflow-y: auto; /* 👈 scroll vertical */
+}
+
+.celda {
+  background-color: #ffffff;
+  color: #000000;
+  text-align: center;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.resaltado {
+  background-color: yellow;
+  color: black;
+  font-weight: bold;
+}
