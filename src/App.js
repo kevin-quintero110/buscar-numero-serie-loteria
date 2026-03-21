@@ -22,6 +22,8 @@ export default function App() {
   const [ultimoMovido, setUltimoMovido] = useState(null);
   const [highlight, setHighlight] = useState(null);
   const [input, setInput] = useState("");
+  const [touchDragNum, setTouchDragNum] = useState(null);
+  const [alertaMsg, setAlertaMsg] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("numeros", JSON.stringify(numeros));
@@ -31,10 +33,93 @@ export default function App() {
     localStorage.setItem("posicionesAnteriores", JSON.stringify(posicionesAnteriores));
   }, [posicionesAnteriores]);
 
+  // Agregar listener global para touch move y end
+  useEffect(() => {
+    const gridElement = document.querySelector('.grid');
+
+    const handleGlobalTouchMove = (e) => {
+      if (!modoManual || !touchDragNum) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      
+      if (element && element.id) {
+        const targetNum = element.id;
+        if (targetNum && touchDragNum !== targetNum) {
+          setDropTarget(targetNum);
+        }
+      }
+
+      // Auto-scroll cuando se arrastra cerca de los bordes
+      if (gridElement) {
+        const gridRect = gridElement.getBoundingClientRect();
+        const touchY = touch.clientY;
+        const scrollThreshold = 80; // píxeles desde borde para activar scroll
+
+        if (touchY < gridRect.top + scrollThreshold && gridElement.scrollTop > 0) {
+          // Scroll hacia arriba
+          gridElement.scrollTop -= 10;
+        } else if (touchY > gridRect.bottom - scrollThreshold && gridElement.scrollTop < gridElement.scrollHeight - gridElement.clientHeight) {
+          // Scroll hacia abajo
+          gridElement.scrollTop += 10;
+        }
+      }
+    };
+
+    const handleGlobalTouchEnd = () => {
+      if (!modoManual || !touchDragNum || !dropTarget) {
+        setTouchDragNum(null);
+        setDropTarget(null);
+        return;
+      }
+
+      const nuevaLista = [...numeros];
+      const draggedIndex = nuevaLista.indexOf(touchDragNum);
+      const targetIndex = nuevaLista.indexOf(dropTarget);
+
+      if (draggedIndex !== -1 && targetIndex !== -1) {
+        const nuevasPosiciones = { ...posicionesAnteriores };
+        if (!nuevasPosiciones[touchDragNum]) nuevasPosiciones[touchDragNum] = [];
+        nuevasPosiciones[touchDragNum].push(draggedIndex);
+        setPosicionesAnteriores(nuevasPosiciones);
+
+        nuevaLista.splice(draggedIndex, 1);
+        nuevaLista.splice(targetIndex, 0, touchDragNum);
+        setNumeros(nuevaLista);
+        setHighlight(touchDragNum);
+        setUltimoMovido([touchDragNum]);
+      }
+
+      setTouchDragNum(null);
+      setDropTarget(null);
+    };
+
+    if (touchDragNum && modoManual) {
+      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      document.addEventListener('touchend', handleGlobalTouchEnd);
+      return () => {
+        document.removeEventListener('touchmove', handleGlobalTouchMove);
+        document.removeEventListener('touchend', handleGlobalTouchEnd);
+      };
+    }
+  }, [touchDragNum, modoManual, numeros, posicionesAnteriores, dropTarget]);
+
   const moverAlFinal = () => {
+    if (!input.trim()) {
+      setAlertaMsg("❌ Por favor ingresa un número para mover");
+      setTimeout(() => setAlertaMsg(null), 3000);
+      return;
+    }
+
     const inputs = input.split(',').map(s => s.trim()).filter(s => s !== '');
     const validInputs = inputs.filter(num => numeros.includes(num));
     
+    if (validInputs.length === 0) {
+      setAlertaMsg("❌ Ninguno de los números ingresados existe");
+      setTimeout(() => setAlertaMsg(null), 3000);
+      return;
+    }
+
     if (validInputs.length > 0) {
       // Guardar posiciones anteriores
       const nuevasPosiciones = { ...posicionesAnteriores };
@@ -53,6 +138,8 @@ export default function App() {
       // Resaltar el último movido
       setHighlight(validInputs[validInputs.length - 1]);
       setUltimoMovido(validInputs);
+      setAlertaMsg(`✅ ${validInputs.length} número(s) movido(s) al final`);
+      setTimeout(() => setAlertaMsg(null), 2000);
       setTimeout(() => {
         document.getElementById(validInputs[validInputs.length - 1])?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -60,17 +147,40 @@ export default function App() {
   };
 
   const buscarNumero = () => {
+    if (!input.trim()) {
+      setAlertaMsg("❌ Por favor ingresa un número para buscar");
+      setTimeout(() => setAlertaMsg(null), 3000);
+      return;
+    }
+
     if (numeros.includes(input)) {
       setHighlight(input);
+      setAlertaMsg(`✅ Número ${input} encontrado`);
+      setTimeout(() => setAlertaMsg(null), 2000);
       setTimeout(() => {
         document.getElementById(input)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
+    } else {
+      setAlertaMsg(`❌ Número ${input} no existe`);
+      setTimeout(() => setAlertaMsg(null), 3000);
     }
   };
 
   // 👇 Nueva función: restaurar número a su posición anterior
   const restaurarNumero = () => {
+    if (!input.trim()) {
+      setAlertaMsg("❌ Por favor ingresa un número para restaurar");
+      setTimeout(() => setAlertaMsg(null), 3000);
+      return;
+    }
+
     const posArray = posicionesAnteriores[input];
+    if (!posArray || posArray.length === 0) {
+      setAlertaMsg(`❌ No hay historial de movimiento para ${input}`);
+      setTimeout(() => setAlertaMsg(null), 3000);
+      return;
+    }
+
     if (posArray && posArray.length > 0) {
       const indexAnterior = posArray.pop();
       const nuevaLista = [...numeros];
@@ -90,6 +200,8 @@ export default function App() {
       setPosicionesAnteriores(nuevasPosiciones);
       setHighlight(input);
       setUltimoMovido([input]);
+      setAlertaMsg(`✅ ${input} restaurado a posición anterior`);
+      setTimeout(() => setAlertaMsg(null), 2000);
       setTimeout(() => {
         document.getElementById(input)?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 100);
@@ -130,6 +242,20 @@ export default function App() {
     }
   };
 
+  // 👇 Funciones para Touch Events en móvil
+  const handleTouchStart = (e, num) => {
+    if (!modoManual) return;
+    setTouchDragNum(num);
+  };
+
+  const handleTouchMove = (e) => {
+    // Manejado globalmente en useEffect
+  };
+
+  const handleTouchEnd = () => {
+    // Manejado globalmente en useEffect
+  };
+
   return (
     <div className="app">
       <input
@@ -140,6 +266,11 @@ export default function App() {
       />
       {ultimoMovido && ultimoMovido.length > 0 && (
         <div className="mensaje-ultimo">Último número movido: {ultimoMovido.join(', ')}</div>
+      )}
+      {alertaMsg && (
+        <div className="alerta">
+          {alertaMsg}
+        </div>
       )}
       <div className="botones">
         <button onClick={moverAlFinal}>➡️ Mover al final</button>
@@ -158,7 +289,7 @@ export default function App() {
           <div
             key={num}
             id={num}
-            className={`celda ${num === highlight ? "resaltado" : ""} ${modoManual ? "arrastrable" : ""} ${draggedNum === num ? "dragged" : modoManual ? "white-bg" : ""} ${num === ultimoMovido ? "ultimo-movido" : ""} ${dropTarget === num ? "drop-target" : ""}`}
+            className={`celda ${num === highlight ? "resaltado" : ""} ${modoManual ? "arrastrable" : ""} ${draggedNum === num ? "dragged" : modoManual ? "white-bg" : ""} ${num === ultimoMovido ? "ultimo-movido" : ""} ${dropTarget === num || touchDragNum === num ? "drop-target" : ""}`}
             draggable={modoManual}
             onDragStart={modoManual ? (e) => { e.dataTransfer.setData('text/plain', num); setDraggedNum(num); } : undefined}
             onDragOver={modoManual ? (e) => e.preventDefault() : undefined}
@@ -166,6 +297,9 @@ export default function App() {
             onDragLeave={modoManual ? () => setDropTarget(null) : undefined}
             onDrop={modoManual ? (e) => handleDrop(e, num) : undefined}
             onDragEnd={modoManual ? () => { setDraggedNum(null); setDropTarget(null); } : undefined}
+            onTouchStart={modoManual ? (e) => handleTouchStart(e, num) : undefined}
+            onTouchMove={modoManual ? handleTouchMove : undefined}
+            onTouchEnd={modoManual ? handleTouchEnd : undefined}
           >
             {num}
           </div>
