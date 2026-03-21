@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 export default function App() {
@@ -23,6 +23,10 @@ export default function App() {
   const [highlight, setHighlight] = useState(null);
   const [input, setInput] = useState("");
   const [touchDragNum, setTouchDragNum] = useState(null);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchStartY, setTouchStartY] = useState(null);
+  const [isTouchDragActive, setIsTouchDragActive] = useState(false);
+  const touchHoldTimeout = useRef(null);
   const [alertaMsg, setAlertaMsg] = useState(null);
 
   useEffect(() => {
@@ -39,8 +43,22 @@ export default function App() {
 
     const handleGlobalTouchMove = (e) => {
       if (!modoManual || !touchDragNum) return;
-      e.preventDefault();
       const touch = e.touches[0];
+      const deltaX = Math.abs(touch.clientX - touchStartX);
+      const deltaY = Math.abs(touch.clientY - touchStartY);
+
+      if (!isTouchDragActive) {
+        // permitir desplazamiento natural si el usuario mueve rápidamente
+        if (deltaY > 6 || deltaX > 6) {
+          clearTimeout(touchHoldTimeout.current);
+          setTouchDragNum(null);
+          setDropTarget(null);
+          setIsTouchDragActive(false);
+          return;
+        }
+        return;
+      }
+
       const element = document.elementFromPoint(touch.clientX, touch.clientY);
       
       if (element && element.id) {
@@ -67,9 +85,26 @@ export default function App() {
     };
 
     const handleGlobalTouchEnd = () => {
-      if (!modoManual || !touchDragNum || !dropTarget) {
+      clearTimeout(touchHoldTimeout.current);
+
+      if (!modoManual || !touchDragNum) {
         setTouchDragNum(null);
         setDropTarget(null);
+        setIsTouchDragActive(false);
+        return;
+      }
+
+      if (!isTouchDragActive) {
+        setTouchDragNum(null);
+        setDropTarget(null);
+        setIsTouchDragActive(false);
+        return;
+      }
+
+      if (!dropTarget) {
+        setTouchDragNum(null);
+        setDropTarget(null);
+        setIsTouchDragActive(false);
         return;
       }
 
@@ -95,14 +130,14 @@ export default function App() {
     };
 
     if (touchDragNum && modoManual) {
-      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: true });
       document.addEventListener('touchend', handleGlobalTouchEnd);
       return () => {
         document.removeEventListener('touchmove', handleGlobalTouchMove);
         document.removeEventListener('touchend', handleGlobalTouchEnd);
       };
     }
-  }, [touchDragNum, modoManual, numeros, posicionesAnteriores, dropTarget]);
+  }, [touchDragNum, modoManual, numeros, posicionesAnteriores, dropTarget, isTouchDragActive, touchStartX, touchStartY]);
 
   const moverAlFinal = () => {
     if (!input.trim()) {
@@ -245,15 +280,19 @@ export default function App() {
   // 👇 Funciones para Touch Events en móvil
   const handleTouchStart = (e, num) => {
     if (!modoManual) return;
+    const touch = e.touches[0];
     setTouchDragNum(num);
-  };
+    setTouchStartX(touch.clientX);
+    setTouchStartY(touch.clientY);
+    setIsTouchDragActive(false);
 
-  const handleTouchMove = (e) => {
-    // Manejado globalmente en useEffect
-  };
+    if (touchHoldTimeout.current) {
+      clearTimeout(touchHoldTimeout.current);
+    }
 
-  const handleTouchEnd = () => {
-    // Manejado globalmente en useEffect
+    touchHoldTimeout.current = setTimeout(() => {
+      setIsTouchDragActive(true);
+    }, 220);
   };
 
   return (
@@ -298,8 +337,6 @@ export default function App() {
             onDrop={modoManual ? (e) => handleDrop(e, num) : undefined}
             onDragEnd={modoManual ? () => { setDraggedNum(null); setDropTarget(null); } : undefined}
             onTouchStart={modoManual ? (e) => handleTouchStart(e, num) : undefined}
-            onTouchMove={modoManual ? handleTouchMove : undefined}
-            onTouchEnd={modoManual ? handleTouchEnd : undefined}
           >
             {num}
           </div>

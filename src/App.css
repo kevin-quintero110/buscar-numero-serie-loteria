@@ -46,6 +46,8 @@
   gap: 6px;
   max-height: 75vh;
   overflow-y: auto;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .celda {
@@ -57,7 +59,7 @@
   font-size: 12px;
   font-weight: 600;
   user-select: none;
-  touch-action: none;
+  touch-action: auto;
 }
 
 .celda.white-bg {
