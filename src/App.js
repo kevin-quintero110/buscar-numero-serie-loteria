@@ -22,6 +22,7 @@ export default function App() {
   const [ultimoMovido, setUltimoMovido] = useState(null);
   const [highlight, setHighlight] = useState(null);
   const [input, setInput] = useState("");
+  const [touchCandidateNum, setTouchCandidateNum] = useState(null);
   const [touchDragNum, setTouchDragNum] = useState(null);
   const [touchStartX, setTouchStartX] = useState(null);
   const [touchStartY, setTouchStartY] = useState(null);
@@ -42,15 +43,18 @@ export default function App() {
     const gridElement = document.querySelector('.grid');
 
     const handleGlobalTouchMove = (e) => {
-      if (!modoManual || !touchDragNum) return;
+      if (!modoManual) return;
       const touch = e.touches[0];
       const deltaX = Math.abs(touch.clientX - touchStartX);
       const deltaY = Math.abs(touch.clientY - touchStartY);
 
       if (!isTouchDragActive) {
-        // permitir desplazamiento natural si el usuario mueve rápidamente
-        if (deltaY > 6 || deltaX > 6) {
+        if (!touchCandidateNum) return;
+
+        // Desplazamiento natural: si mueve más de 6px, cancelar intent de arrastre
+        if (deltaY > 8 || deltaX > 8) {
           clearTimeout(touchHoldTimeout.current);
+          setTouchCandidateNum(null);
           setTouchDragNum(null);
           setDropTarget(null);
           setIsTouchDragActive(false);
@@ -59,6 +63,9 @@ export default function App() {
         return;
       }
 
+      if (!touchDragNum) return;
+
+      e.preventDefault();
       const element = document.elementFromPoint(touch.clientX, touch.clientY);
       
       if (element && element.id) {
@@ -87,7 +94,8 @@ export default function App() {
     const handleGlobalTouchEnd = () => {
       clearTimeout(touchHoldTimeout.current);
 
-      if (!modoManual || !touchDragNum) {
+      if (!modoManual) {
+        setTouchCandidateNum(null);
         setTouchDragNum(null);
         setDropTarget(null);
         setIsTouchDragActive(false);
@@ -95,13 +103,14 @@ export default function App() {
       }
 
       if (!isTouchDragActive) {
+        setTouchCandidateNum(null);
         setTouchDragNum(null);
         setDropTarget(null);
-        setIsTouchDragActive(false);
         return;
       }
 
       if (!dropTarget) {
+        setTouchCandidateNum(null);
         setTouchDragNum(null);
         setDropTarget(null);
         setIsTouchDragActive(false);
@@ -129,15 +138,17 @@ export default function App() {
       setDropTarget(null);
     };
 
-    if (touchDragNum && modoManual) {
+    if (modoManual) {
       document.addEventListener('touchmove', handleGlobalTouchMove, { passive: true });
       document.addEventListener('touchend', handleGlobalTouchEnd);
+      document.addEventListener('touchcancel', handleGlobalTouchEnd);
       return () => {
         document.removeEventListener('touchmove', handleGlobalTouchMove);
         document.removeEventListener('touchend', handleGlobalTouchEnd);
+        document.removeEventListener('touchcancel', handleGlobalTouchEnd);
       };
     }
-  }, [touchDragNum, modoManual, numeros, posicionesAnteriores, dropTarget, isTouchDragActive, touchStartX, touchStartY]);
+  }, [touchDragNum, touchCandidateNum, modoManual, numeros, posicionesAnteriores, dropTarget, isTouchDragActive, touchStartX, touchStartY]);
 
   const moverAlFinal = () => {
     if (!input.trim()) {
@@ -245,10 +256,19 @@ export default function App() {
 
   // 👇 Nueva función: restaurar la serie completa
   const restaurarSerieCompleta = () => {
+    const confirmacion = window.confirm("¿Estás seguro de restaurar la serie completa desde 0? Esto reiniciará toda la lista de números.");
+    if (!confirmacion) {
+      setAlertaMsg("↩️ Restaurar serie completa cancelada.");
+      setTimeout(() => setAlertaMsg(null), 2000);
+      return;
+    }
+
     setNumeros(listaInicial);
     setPosicionesAnteriores({});
     setHighlight(null);
     setUltimoMovido(null);
+    setAlertaMsg("✅ Serie completa restaurada a cero.");
+    setTimeout(() => setAlertaMsg(null), 2000);
   };
 
   // 👇 Nueva función: manejar el drop en drag and drop
@@ -281,7 +301,7 @@ export default function App() {
   const handleTouchStart = (e, num) => {
     if (!modoManual) return;
     const touch = e.touches[0];
-    setTouchDragNum(num);
+    setTouchCandidateNum(num);
     setTouchStartX(touch.clientX);
     setTouchStartY(touch.clientY);
     setIsTouchDragActive(false);
@@ -291,6 +311,7 @@ export default function App() {
     }
 
     touchHoldTimeout.current = setTimeout(() => {
+      setTouchDragNum(num);
       setIsTouchDragActive(true);
     }, 220);
   };
