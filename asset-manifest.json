@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/buscar-numero-serie-loteria/static/css/main.9ec556b6.css",
-    "main.js": "/buscar-numero-serie-loteria/static/js/main.b04eb107.js",
+    "main.css": "/buscar-numero-serie-loteria/static/css/main.5121daa2.css",
+    "main.js": "/buscar-numero-serie-loteria/static/js/main.8a5318b7.js",
     "index.html": "/buscar-numero-serie-loteria/index.html",
-    "main.9ec556b6.css.map": "/buscar-numero-serie-loteria/static/css/main.9ec556b6.css.map",
-    "main.b04eb107.js.map": "/buscar-numero-serie-loteria/static/js/main.b04eb107.js.map"
+    "main.5121daa2.css.map": "/buscar-numero-serie-loteria/static/css/main.5121daa2.css.map",
+    "main.8a5318b7.js.map": "/buscar-numero-serie-loteria/static/js/main.8a5318b7.js.map"
   },
   "entrypoints": [
-    "static/css/main.9ec556b6.css",
-    "static/js/main.b04eb107.js"
+    "static/css/main.5121daa2.css",
+    "static/js/main.8a5318b7.js"
   ]
 }
