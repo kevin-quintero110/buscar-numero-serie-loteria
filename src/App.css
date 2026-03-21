@@ -50,8 +50,60 @@
   border-radius: 4px;
 }
 
+.celda.white-bg {
+  background-color: rgb(0, 0, 0) !important;
+  color: rgb(235, 238, 233);
+  box-shadow: 0 0 10px lightblue;
+}
+
+.celda.dragged {
+  background-color: blue !important;
+  color: white;
+  border: 2px solid darkblue;
+}
+
+.celda.dragged:hover {
+  background-color: lightblue !important;
+  box-shadow: 0 0 20px rgb(6, 146, 192);
+}
+
+.celda.ultimo-movido {
+  background-color: green !important;
+  color: white;
+  font-weight: bold;
+}
+
 .resaltado {
   background-color: yellow;
   color: black;
+  font-weight: bold;
+}
+
+button.modo-manual.inactivo {
+  background-color: red !important;
+  color: white;
+  border: 2px solid darkred;
+}
+
+button.modo-manual.activo {
+  background-color: green !important;
+  color: white;
+  border: 2px solid darkgreen;
+}
+
+.celda.drop-target {
+  border: 3px dashed blue !important;
+  background-color: lightblue !important;
+  transform: scale(1.1);
+  transition: all 0.2s ease;
+}
+
+.mensaje-ultimo {
+  background-color: green;
+  color: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  text-align: center;
   font-weight: bold;
 }
