@@ -139,7 +139,7 @@ export default function App() {
     };
 
     if (modoManual) {
-      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: true });
+      document.addEventListener('touchmove', handleGlobalTouchMove);
       document.addEventListener('touchend', handleGlobalTouchEnd);
       document.addEventListener('touchcancel', handleGlobalTouchEnd);
       return () => {

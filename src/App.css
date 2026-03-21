@@ -42,10 +42,11 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 6px;
   max-height: 75vh;
   overflow-y: auto;
+  overflow-x: hidden;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
 }
@@ -170,9 +171,12 @@ button.modo-manual.activo {
   }
 
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
     gap: 8px;
     max-height: 65vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    touch-action: pan-y;
   }
 
   .celda {
@@ -250,12 +254,14 @@ button.modo-manual.activo {
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
     gap: 8px;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     width: 100%;
     box-sizing: border-box;
+    touch-action: pan-y;
   }
 
   .celda {
@@ -267,7 +273,7 @@ button.modo-manual.activo {
     display: flex;
     align-items: center;
     justify-content: center;
-    touch-action: none;
+    touch-action: auto;
     border-radius: 6px;
   }
 
